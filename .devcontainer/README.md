@@ -22,6 +22,15 @@ RUN case "${TARGETARCH}" in \
         arm64) \
             # ARM64-specific installations
             ;; \
+        "") \
+            # TARGETARCH not set - single-platform build
+            echo "Architecture will be auto-detected at runtime"; \
+            ;; \
+        *) \
+            # Unsupported architecture
+            echo "Unsupported architecture: ${TARGETARCH}"; \
+            exit 1; \
+            ;; \
     esac
 ```
 
