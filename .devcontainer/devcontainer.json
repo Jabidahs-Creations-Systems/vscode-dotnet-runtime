@@ -1,0 +1,30 @@
+{
+"name": ".NET Runtime Extension Development",
+"build": {
+"dockerfile": "Dockerfile",
+"args": {
+"VARIANT": "8.0",
+"NODE_VERSION": "20"
+}
+},
+
+"customizations": {
+"vscode": {
+"extensions": [
+"ms-dotnettools.csharp",
+"ms-vscode.vscode-typescript-next",
+"dbaeumer.vscode-eslint"
+]
+}
+},
+
+"postCreateCommand": "npm install",
+
+"remoteUser": "vscode",
+
+"features": {
+"ghcr.io/devcontainers/features/node:1": {
+"version": "20"
+}
+}
+}
