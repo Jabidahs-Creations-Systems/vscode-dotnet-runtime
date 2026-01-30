@@ -5,23 +5,11 @@
 ARG VARIANT=8.0
 FROM mcr.microsoft.com/dotnet/sdk:${VARIANT}
 
-# Install Node.js - using NodeSource which provides multi-arch packages
-ARG NODE_VERSION=20
+# Install development tools
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
         curl \
         ca-certificates \
-        gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_VERSION}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends nodejs \
-    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-
-# Install development tools
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
         git \
         sudo \
         procps \
@@ -38,7 +26,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 # Example: Architecture-specific package installation
 # This demonstrates the CORRECT way to handle multi-architecture builds
-# Use TARGETARCH which Docker automatically sets during multi-platform builds
+# TARGETARCH is automatically populated by Docker BuildKit during multi-platform builds.
+# It will be empty when building without buildx or multi-platform mode.
 ARG TARGETARCH
 
 # Example of architecture-aware installation
@@ -54,15 +43,17 @@ RUN echo "Building for architecture: ${TARGETARCH:-auto-detected}" && \
             echo "Configuring for ARM64/aarch64 architecture"; \
             # Add ARM64-specific installations here if needed
             ;; \
+        "") \
+            echo "TARGETARCH not set - likely single-platform build. Architecture will be auto-detected at runtime."; \
+            ;; \
         *) \
-            echo "Architecture: ${TARGETARCH} - using default configuration"; \
+            echo "Unsupported architecture: ${TARGETARCH}"; \
+            exit 1; \
             ;; \
     esac
 
 # Set the default user
 USER $USERNAME
 
-# Display architecture information for verification
-RUN echo "Container architecture: $(uname -m)" && \
-    echo "Node.js architecture: $(node -e 'console.log(process.arch)')" && \
-    echo ".NET architecture: $(dotnet --info | grep RID || echo 'N/A')"
+# Note: Node.js is installed via dev container features (see devcontainer.json)
+# This ensures proper multi-architecture support without manual installation

@@ -78,6 +78,9 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
         curl "https://example.com/downloads/x64/package.deb"; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
         curl "https://example.com/downloads/arm64/package.deb"; \
+    else \
+        echo "Unsupported architecture: ${TARGETARCH}"; \
+        exit 1; \
     fi
 ```
 
